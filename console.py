@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-""" Console Module """
+"""This is a  Console Module """
 import cmd
 import sys
 from models.base_model import BaseModel
@@ -115,16 +115,35 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, args):
         """ Create an object of any class"""
-        if not args:
+        args = args.split()
+        if len(args) == 0:
             print("** class name missing **")
             return
-        elif args not in HBNBCommand.classes:
-            print("** class doesn't exist **")
+        class_name = args[0]
+        if class_name not in HBNBCommand.classes:
+            print("**.class.doesn't.exist.**")
             return
-        new_instance = HBNBCommand.classes[args]()
-        storage.save()
+
+        # create a dict with the params gotten from the commandline
+        new_instance = HBNBCommand.classes[class_name]()
+        for param in args[1:]:
+            key_value = param.split('=')
+            if len(key_value) != 2:
+                break
+            elif ('"' in key_value[1]):
+                key_value[1] = key_value[1][1:-1]
+                key_value[1] = key_value[1].replace("_", " ")
+            elif('.' in key_value[1]):
+                key_value[1] = float(key_value[1])
+            elif ('.' not in key_value[1]):
+                key_value[1] = int(key_value[1])
+
+            setattr(new_instance, key_value[0], key_value[1])
+
+        # creates the new instance
+        new_instance.save()
         print(new_instance.id)
-        storage.save()
+        new_instance.save()
 
     def help_create(self):
         """ Help information for the create method """
@@ -319,6 +338,7 @@ class HBNBCommand(cmd.Cmd):
         """ Help information for the update class """
         print("Updates an object with new information")
         print("Usage: update <className> <id> <attName> <attVal>\n")
+
 
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
